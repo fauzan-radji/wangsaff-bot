@@ -6,6 +6,7 @@ export default class Command {
   #inGroup;
   #inPrivateChat;
   #beta;
+
   constructor({
     prompt,
     handler,
@@ -31,11 +32,11 @@ export default class Command {
 
     // check if this command available in private chat
     const isAvaliableInPrivateChat = !chat.isGroup && !this.inPrivateChat;
-    if (isAvailableInGroupChat) return false;
+    if (isAvaliableInPrivateChat) return false;
 
     // if this is beta command, check if it's available to the user or the chat
     const isInBetaGroup = chat.id._serialized === env("BETA_GROUP");
-    if (isInBetaGroup) return false;
+    if (this.beta && !isInBetaGroup) return false;
 
     return true;
   }
@@ -50,6 +51,10 @@ export default class Command {
 
   get inPrivateChat() {
     return this.#inPrivateChat;
+  }
+
+  get beta() {
+    return this.#beta;
   }
 
   static findByMessage(commands, message) {
