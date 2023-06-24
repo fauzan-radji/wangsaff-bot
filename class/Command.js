@@ -45,11 +45,11 @@ export default class Command {
   }
 
   get prompt() {
-    return this.#prompt;
+    return `${Command.PREFIX}${this.#prompt}`;
   }
 
   get aliases() {
-    return this.#aliases;
+    return this.#aliases.map((alias) => `${Command.PREFIX}${alias}`);
   }
 
   get inGroup() {
@@ -68,8 +68,8 @@ export default class Command {
     // find command by prompt or aliases
     return commands.find(
       (command) =>
-        message.startsWith(`${Command.PREFIX}${command.prompt}`) ||
-        command.aliases.some((alias) =>
+        message.startsWith(`${Command.PREFIX}${command.#prompt}`) ||
+        command.#aliases.some((alias) =>
           message.startsWith(`${Command.PREFIX}${alias}`)
         )
     );

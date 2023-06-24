@@ -14,7 +14,15 @@ export default class Bot {
     this.name = name;
     this.client = Bot.client();
 
-    this.#commands = [];
+    this.#commands = [
+      new Command({
+        prompt: "menu",
+        aliases: ["help", "bantuan"],
+        handler: ({ msg, chat }) => {
+          msg.reply(`*Menu*\n${this.getMenu(chat)}`);
+        },
+      }),
+    ];
     this.#mentions = [
       new Mention({
         name: "everyone",
@@ -46,7 +54,7 @@ export default class Bot {
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
     if (command) {
-      if (command.isRunnable(chat)) command.run({ msg });
+      if (command.isRunnable(chat)) command.run({ msg, chat });
       else {
         const errorMessage = `Command \`\`\`${Command.PREFIX}${command.prompt}\`\`\` isn't available here.`;
         msg.reply(errorMessage);
@@ -130,6 +138,39 @@ export default class Bot {
 
   error(e) {
     console.error(`${this.name}: Error:`, e);
+  }
+
+  getMenu(chat) {
+    return `\n${this.getAvailableCommandsString(chat)}\n\n${
+      this.mentionsString
+    }`;
+  }
+
+  getAvailableCommandsString(chat) {
+    return this.#commands
+      .filter((command) => command.isRunnable(chat))
+      .map(
+        (command, i) =>
+          `$ *${command.prompt}* ${
+            command.aliases.length > 0
+              ? `| ${command.aliases.map((alias) => `*${alias}*`).join(", ")}`
+              : ""
+          }`
+      )
+      .join("\n");
+  }
+
+  get mentionsString() {
+    return this.#mentions
+      .map(
+        (mention, i) =>
+          `- *${mention.name}* ${
+            mention.aliases.length > 0
+              ? `| ${mention.aliases.map((alias) => `*${alias}*`).join(", ")}`
+              : ""
+          }`
+      )
+      .join("\n");
   }
 
   static client() {
