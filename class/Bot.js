@@ -4,35 +4,80 @@ const { Client, LocalAuth } = pkg;
 
 import path from "../scripts/path.js";
 import Command from "./Command.js";
+import Mention from "./Mention.js";
 
 export default class Bot {
   #commands;
+  #mentions;
 
   constructor(name) {
     this.name = name;
     this.client = Bot.client();
 
     this.#commands = [];
+    this.#mentions = [
+      new Mention({ name: "everyone", handler: () => true }),
+      new Mention({
+        name: "admin",
+        handler: (participant) => participant.isAdmin,
+      }),
+      new Mention({
+        name: "member",
+        handler: (participant) =>
+          !(participant.isAdmin || participant.isSuperAdmin),
+      }),
+    ];
 
     this.initialize();
   }
 
   async handleMessage(msg) {
     const command = Command.findByMessage(this.#commands, msg.body);
-    if (!command) return;
+    const mention = Mention.findByMessage(this.#mentions, msg.body);
+
+    if (!command && !mention) return;
 
     const chat = await msg.getChat();
 
-    if (command.isRunnable(chat)) command.run({ msg });
-    else {
-      const errorMessage = `Command \`\`\`${command.prompt}\`\`\` isn't available here.`;
-      msg.reply(errorMessage);
-      this.error(errorMessage);
+    this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
+
+    if (command) {
+      if (command.isRunnable(chat)) command.run({ msg });
+      else {
+        const errorMessage = `Command \`\`\`${Command.PREFIX}${command.prompt}\`\`\` isn't available here.`;
+        msg.reply(errorMessage);
+        this.error(errorMessage);
+      }
+    }
+
+    if (mention) {
+      if (mention.isRunnable(chat)) {
+        const participants = await chat.participants;
+        const mentions = await mention.run(participants, this.client);
+
+        const options = { mentions };
+        if (msg.hasMedia) options.media = await msg.downloadMedia();
+
+        if (msg.hasQuotedMsg) {
+          const quotedMsg = await msg.getQuotedMessage();
+          quotedMsg.reply(msg.body, msg.from, options);
+        } else {
+          chat.sendMessage(msg.body, options);
+        }
+      } else {
+        const errorMessage = `Mention \`\`\`@${mention.name}\`\`\` isn't available here.`;
+        msg.reply(errorMessage);
+        this.error(errorMessage);
+      }
     }
   }
 
   addCommand(command) {
     this.#commands.push(command);
+  }
+
+  addMention(mention) {
+    this.#mentions.push(mention);
   }
 
   on(eventType, callback) {
@@ -84,7 +129,6 @@ export default class Bot {
   }
 
   static client() {
-    console.log(path.root());
     return new Client({
       puppeteer: {
         args: [
