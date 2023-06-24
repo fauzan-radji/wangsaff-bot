@@ -38,11 +38,11 @@ export default class Mention {
   }
 
   get name() {
-    return this.#name;
+    return `@${this.#name}`;
   }
 
   get aliases() {
-    return this.#aliases;
+    return this.#aliases.map((alias) => `@${alias}`);
   }
 
   get beta() {
@@ -53,8 +53,8 @@ export default class Mention {
     // find mention by name or aliases
     return mentions.find(
       (mention) =>
-        new RegExp(`@\\b${mention.name}\\b`, "gi").test(message) ||
-        mention.aliases.some((alias) =>
+        new RegExp(`@\\b${mention.#name}\\b`, "gi").test(message) ||
+        mention.#aliases.some((alias) =>
           new RegExp(`@\\b${alias}\\b`, "gi").test(message)
         )
     );
