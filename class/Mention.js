@@ -2,11 +2,13 @@ import { env } from "../scripts/utils.js";
 
 export default class Mention {
   #name;
+  #aliases;
   #handler;
   #beta;
 
-  constructor({ name, handler, beta = false }) {
+  constructor({ name, aliases = [], handler, beta = false }) {
     this.#name = name;
+    this.#aliases = aliases;
     this.#handler = handler;
     this.#beta = beta;
   }
@@ -39,13 +41,22 @@ export default class Mention {
     return this.#name;
   }
 
+  get aliases() {
+    return this.#aliases;
+  }
+
   get beta() {
     return this.#beta;
   }
 
   static findByMessage(mentions, message) {
-    return mentions.find((mention) =>
-      new RegExp(`@\\b${mention.name}\\b`, "gi").test(message)
+    // find mention by name or aliases
+    return mentions.find(
+      (mention) =>
+        new RegExp(`@\\b${mention.name}\\b`, "gi").test(message) ||
+        mention.aliases.some((alias) =>
+          new RegExp(`@\\b${alias}\\b`, "gi").test(message)
+        )
     );
   }
 }

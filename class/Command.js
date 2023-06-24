@@ -2,6 +2,7 @@ import { env } from "../scripts/utils.js";
 
 export default class Command {
   #prompt;
+  #aliases;
   #handler;
   #inGroup;
   #inPrivateChat;
@@ -9,12 +10,14 @@ export default class Command {
 
   constructor({
     prompt,
+    aliases = [],
     handler,
     inGroup = true,
     inPrivateChat = true,
     beta = false,
   }) {
     this.#prompt = prompt;
+    this.#aliases = aliases;
     this.#handler = handler;
     this.#inGroup = inGroup;
     this.#inPrivateChat = inPrivateChat;
@@ -45,6 +48,10 @@ export default class Command {
     return this.#prompt;
   }
 
+  get aliases() {
+    return this.#aliases;
+  }
+
   get inGroup() {
     return this.#inGroup;
   }
@@ -58,8 +65,13 @@ export default class Command {
   }
 
   static findByMessage(commands, message) {
-    return commands.find((command) =>
-      message.startsWith(`${Command.PREFIX}${command.prompt}`)
+    // find command by prompt or aliases
+    return commands.find(
+      (command) =>
+        message.startsWith(`${Command.PREFIX}${command.prompt}`) ||
+        command.aliases.some((alias) =>
+          message.startsWith(`${Command.PREFIX}${alias}`)
+        )
     );
   }
 

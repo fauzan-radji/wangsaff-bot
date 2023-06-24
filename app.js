@@ -5,6 +5,7 @@ const bot = new Bot("bot");
 bot.addCommand(
   new Command({
     prompt: "ping",
+    aliases: ["p"],
     handler: ({ msg }) => {
       msg.reply("pong");
     },

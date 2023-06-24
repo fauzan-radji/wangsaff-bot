@@ -16,7 +16,11 @@ export default class Bot {
 
     this.#commands = [];
     this.#mentions = [
-      new Mention({ name: "everyone", handler: () => true }),
+      new Mention({
+        name: "everyone",
+        aliases: ["everybody", "all", "semua", "semuaorang"],
+        handler: () => true,
+      }),
       new Mention({
         name: "admin",
         handler: (participant) => participant.isAdmin,
