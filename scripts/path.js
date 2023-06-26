@@ -1,11 +1,24 @@
 import path from "path";
+import { existsSync, lstatSync } from "fs";
 
 function absolute(relative) {
   return path.resolve(relative);
 }
 
 export function root(child = "") {
-  return `${absolute("./")}/${child}`;
+  return `${absolute("./")}/${child.trimStart("/")}`;
 }
 
-export default { root };
+export function data(child = "") {
+  return `${root("data")}/${child.trimStart("/")}`;
+}
+
+export function fileExists(path) {
+  return existsSync(path) && lstatSync(path).isFile();
+}
+
+export function dirExists(path) {
+  return existsSync(path) && lstatSync(path).isDirectory();
+}
+
+export default { root, data, fileExists, dirExists };
