@@ -21,4 +21,6 @@ export function dirExists(path) {
   return existsSync(path) && lstatSync(path).isDirectory();
 }
 
-export default { root, data, fileExists, dirExists };
+export const LOG_FILE = root("logs.txt");
+
+export default { root, data, fileExists, dirExists, LOG_FILE };

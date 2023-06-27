@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "fs";
+import { appendFileSync, readFileSync, writeFileSync } from "fs";
 import path, { fileExists, root } from "./path.js";
 
 export function env(key, default_ = null) {
@@ -36,4 +36,14 @@ export function data(name, data) {
   }
 }
 
-export default { env, data };
+/**
+ * This function is used to log data to a file.
+ * @param  {...string} data
+ */
+export function log(...data) {
+  const date = new Date().toLocaleString();
+  data = data.flatMap((d) => d.split(/\r?\n/g));
+  appendFileSync(path.LOG_FILE, data.map((d) => `[${date}] ${d}\n`).join(""));
+}
+
+export default { env, data, log };

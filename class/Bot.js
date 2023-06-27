@@ -5,6 +5,8 @@ const { Client, LocalAuth } = pkg;
 import path from "../scripts/path.js";
 import Command from "./Command.js";
 import Mention from "./Mention.js";
+import Model from "./Model.js";
+import utils from "../scripts/utils.js";
 
 export default class Bot {
   #commands;
@@ -53,6 +55,8 @@ export default class Bot {
 
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
+    this.#addChatIfNotExists(chat);
+
     if (command) {
       if (command.isRunnable(chat)) command.run({ msg, chat });
       else {
@@ -84,6 +88,29 @@ export default class Bot {
     }
   }
 
+  #addChatIfNotExists(chat) {
+    if (chat.isGroup) {
+      const group = Model.findBy("groups", "chat_id", chat.id._serialized);
+      if (!group) {
+        Model.create("groups", {
+          chat_id: chat.id._serialized,
+          name: chat.name,
+          description: chat.description,
+        });
+      }
+    } else {
+      const contact = Model.findBy("contacts", "chat_id", chat.id._serialized);
+      if (!contact) {
+        Model.create("contacts", {
+          number: chat.id.user,
+          chat_id: chat.id._serialized,
+          name: chat.name,
+        });
+      }
+    }
+  }
+
+  // TODO: addCommand and addMention should be able to accept array of commands and mentions
   addCommand(command) {
     this.#commands.push(command);
   }
@@ -99,10 +126,10 @@ export default class Bot {
   initialize() {
     this.on("message", this.handleMessage.bind(this));
     this.on("loading_screen", (percent, message) => {
-      this.log("LOADING SCREEN", percent, message);
+      this.log(`LOADING SCREEN: ${percent} ${message}`);
     });
     this.on("qr", (qr) => {
-      this.log("QR RECEIVED", qr);
+      this.log(`QR RECEIVED: ${qr}`);
       qrcode.generate(qr, { small: true });
     });
     this.on("authenticated", () => {
@@ -144,7 +171,12 @@ export default class Bot {
     this.log(msg, options);
   }
 
+  /**
+   * Log the message to console and log file
+   * @param  {...string} msg
+   */
   log(...msg) {
+    utils.log(`========[ ${this.name} ]========`, ...msg);
     console.log(`================================\n${this.name}:`, ...msg);
   }
 
