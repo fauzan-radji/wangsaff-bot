@@ -119,8 +119,20 @@ export default class Bot {
       if (before.fromMe) return;
 
       const contact = await before.getContact();
+      const chat = await before.getChat();
+
       after.reply(`Pesan terhapus dari\n*${contact.pushname}*\n${before.body}`);
-      this.log(`Pesan terhapus dari\n*${contact.pushname}*\n${before.body}`);
+
+      // if the message from a group then the message variable will be:
+      // Pesan terhapus dari grup GroupName oleh John Doe
+      // otherwise the message variable will be:
+      // Pesan terhapus dari John Doe
+      const message = `Pesan terhapus dari ${
+        chat.isGroup
+          ? `grup ${chat.name} oleh ${contact.pushname}`
+          : contact.pushname
+      }`;
+      this.log(`${message}:\n${before.body}`);
     });
 
     this.client.initialize();
@@ -133,7 +145,7 @@ export default class Bot {
   }
 
   log(...msg) {
-    console.log(`${this.name}:`, ...msg);
+    console.log(`================================\n${this.name}:`, ...msg);
   }
 
   error(e) {
