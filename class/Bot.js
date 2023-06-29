@@ -6,8 +6,8 @@ import path from "../scripts/path.js";
 import Command from "./Command.js";
 import Mention from "./Mention.js";
 import utils from "../scripts/utils.js";
-import Group from "./Group.js";
-import Contact from "./Contact.js";
+import Group from "../models/Group.js";
+import Contact from "../models/Contact.js";
 
 export default class Bot {
   #commands;
