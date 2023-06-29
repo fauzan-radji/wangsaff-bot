@@ -43,7 +43,7 @@ export default class Model {
   static create(obj) {
     const table = this.table;
     const lastId = Math.max(0, ...this.all(table).map((model) => model.id));
-    const models = this.all(table);
+    const models = this.all();
     obj.id = lastId + 1;
     const model = new this(obj);
     models.push(model);
@@ -51,19 +51,21 @@ export default class Model {
     return model;
   }
 
-  static findBy(table, key, value) {
-    const models = this.all(table);
+  static findBy(key, value) {
+    const table = this.table;
+    const models = this.all();
     const model = models.find((model) => model[key] === value);
     if (model) return new this(model);
     else return null;
   }
 
-  static find(table, id) {
-    return this.findBy(table, "id", id);
+  static find(id) {
+    return this.findBy("id", id);
   }
 
-  static delete(table, id) {
-    const models = this.all(table);
+  static delete(id) {
+    const table = this.table;
+    const models = this.all();
     const index = models.findIndex((model) => model.id === id);
     if (index === -1) return null;
     const model = models[index];
@@ -72,8 +74,9 @@ export default class Model {
     return new this(model);
   }
 
-  static update(table, id, obj) {
-    const models = this.all(table);
+  static update(id, obj) {
+    const table = this.table;
+    const models = this.all();
     const index = models.findIndex((model) => model.id === id);
     if (index === -1) return null;
     models[index] = { ...models[index], ...obj };
@@ -83,24 +86,24 @@ export default class Model {
     return new this(model);
   }
 
-  static last(table) {
-    const models = this.all(table);
+  static last() {
+    const models = this.all();
     if (models.length === 0) return null;
 
     const model = models[models.length - 1];
     return new this(model);
   }
 
-  static first(table) {
-    const models = this.all(table);
+  static first() {
+    const models = this.all();
     if (models.length === 0) return null;
 
     const model = models[0];
     return new this(model);
   }
 
-  static filter(table, callback) {
-    const models = this.all(table);
+  static filter(callback) {
+    const models = this.all();
     const filteredModels = models.filter(callback);
     return filteredModels.map((model) => new this(model));
   }
