@@ -31,6 +31,5 @@ bot.addCommand(
         );
       }
     },
-    beta: true,
   })
 );

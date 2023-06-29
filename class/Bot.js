@@ -47,6 +47,8 @@ export default class Bot {
   }
 
   async handleMessage(msg) {
+    if (msg.isStatus) return;
+
     const command = Command.findByMessage(this.#commands, msg.body);
     const mention = Mention.findByMessage(this.#mentions, msg.body);
 
@@ -61,7 +63,7 @@ export default class Bot {
     if (command) {
       if (command.isRunnable(chat)) command.run({ msg, chat, contact });
       else {
-        const errorMessage = `Command \`\`\`${Command.PREFIX}${command.prompt}\`\`\` isn't available here.`;
+        const errorMessage = `Command \`\`\`${command.prompt}\`\`\` isn't available here.`;
         msg.reply(errorMessage);
         this.error(errorMessage);
       }
@@ -147,9 +149,17 @@ export default class Bot {
       if (before.fromMe) return;
 
       const contact = await before.getContact();
+      if (before.isStatus) {
+        this.log(`Status terhapus dari ${contact.pushname}:\n${before.body}`);
+        return;
+      }
+
       const chat = await before.getChat();
 
-      after.reply(`Pesan terhapus dari\n*${contact.pushname}*\n${before.body}`);
+      this.sendMessage(
+        before.from,
+        `Pesan terhapus dari\n*${contact.pushname}*\n${before.body}`
+      );
 
       // if the message from a group then the message variable will be:
       // Pesan terhapus dari grup GroupName oleh John Doe
@@ -168,8 +178,7 @@ export default class Bot {
 
   sendMessage(chatId, msg, options = {}) {
     this.client.sendMessage(chatId, msg, options);
-    this.log(`Mengirim pesan kepada *${chatId}*`);
-    this.log(msg, options);
+    this.log(`Mengirim pesan kepada *${chatId}*\n${msg}`);
   }
 
   /**
