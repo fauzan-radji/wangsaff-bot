@@ -5,8 +5,9 @@ const { Client, LocalAuth } = pkg;
 import path from "../scripts/path.js";
 import Command from "./Command.js";
 import Mention from "./Mention.js";
-import Model from "./Model.js";
 import utils from "../scripts/utils.js";
+import Group from "./Group.js";
+import Contact from "./Contact.js";
 
 export default class Bot {
   #commands;
@@ -49,16 +50,16 @@ export default class Bot {
     const command = Command.findByMessage(this.#commands, msg.body);
     const mention = Mention.findByMessage(this.#mentions, msg.body);
 
-    if (!command && !mention) return;
-
     const chat = await msg.getChat();
+    this.#addChatIfNotExists(chat);
+    const contact = await msg.getContact();
+
+    if (!command && !mention) return;
 
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
-    this.#addChatIfNotExists(chat);
-
     if (command) {
-      if (command.isRunnable(chat)) command.run({ msg, chat });
+      if (command.isRunnable(chat)) command.run({ msg, chat, contact });
       else {
         const errorMessage = `Command \`\`\`${Command.PREFIX}${command.prompt}\`\`\` isn't available here.`;
         msg.reply(errorMessage);
@@ -90,18 +91,18 @@ export default class Bot {
 
   #addChatIfNotExists(chat) {
     if (chat.isGroup) {
-      const group = Model.findBy("groups", "chat_id", chat.id._serialized);
+      const group = Group.findBy("chat_id", chat.id._serialized);
       if (!group) {
-        Model.create("groups", {
+        Group.create({
           chat_id: chat.id._serialized,
           name: chat.name,
           description: chat.description,
         });
       }
     } else {
-      const contact = Model.findBy("contacts", "chat_id", chat.id._serialized);
+      const contact = Contact.findBy("chat_id", chat.id._serialized);
       if (!contact) {
-        Model.create("contacts", {
+        Contact.create({
           number: chat.id.user,
           chat_id: chat.id._serialized,
           name: chat.name,
