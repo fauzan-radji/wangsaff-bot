@@ -1,44 +1,60 @@
 import { data } from "../scripts/utils.js";
 
 export default class Model {
+  static _table;
+  static _fields;
   #table;
 
-  constructor(table, obj) {
-    this.#table = table;
-    for (const [key, value] of Object.entries(obj)) {
+  constructor(obj) {
+    this.#table = this.constructor._table;
+
+    const filteredObj = Object.fromEntries(
+      Object.entries(obj).filter(
+        ([key]) => this.constructor._fields.includes(key) || key === "id"
+      )
+    );
+
+    for (const [key, value] of Object.entries(filteredObj)) {
       this[key] = value;
     }
   }
 
   delete() {
-    return Model.delete(this.table, this.id);
+    return this.contructor.delete(this.table, this.id);
   }
 
   update(obj) {
-    return Model.update(this.table, this.id, obj);
+    return this.contructor.update(this.table, this.id, obj);
   }
 
   get table() {
     return this.#table;
   }
 
-  static all(table) {
-    return data(table).map((model) => new Model(table, model));
+  static get table() {
+    return this._table;
   }
 
-  static create(table, obj) {
+  static all() {
+    const table = this.table;
+    return data(table).map((model) => new this(model));
+  }
+
+  static create(obj) {
+    const table = this.table;
     const lastId = Math.max(0, ...this.all(table).map((model) => model.id));
     const models = this.all(table);
     obj.id = lastId + 1;
-    models.push(obj);
+    const model = new this(obj);
+    models.push(model);
     data(table, models);
-    return new Model(table, obj);
+    return model;
   }
 
   static findBy(table, key, value) {
     const models = this.all(table);
     const model = models.find((model) => model[key] === value);
-    if (model) return new Model(table, model);
+    if (model) return new this(model);
     else return null;
   }
 
@@ -53,7 +69,7 @@ export default class Model {
     const model = models[index];
     models.splice(index, 1);
     data(table, models);
-    return new Model(table, model);
+    return new this(model);
   }
 
   static update(table, id, obj) {
@@ -64,7 +80,7 @@ export default class Model {
     data(table, models);
 
     const model = models[index];
-    return new Model(table, model);
+    return new this(model);
   }
 
   static last(table) {
@@ -72,7 +88,7 @@ export default class Model {
     if (models.length === 0) return null;
 
     const model = models[models.length - 1];
-    return new Model(table, model);
+    return new this(model);
   }
 
   static first(table) {
@@ -80,12 +96,12 @@ export default class Model {
     if (models.length === 0) return null;
 
     const model = models[0];
-    return new Model(table, model);
+    return new this(model);
   }
 
   static filter(table, callback) {
     const models = this.all(table);
     const filteredModels = models.filter(callback);
-    return filteredModels.map((model) => new Model(table, model));
+    return filteredModels.map((model) => new this(model));
   }
 }
