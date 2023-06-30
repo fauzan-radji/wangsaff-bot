@@ -21,7 +21,11 @@ bot.addCommand(
       if (msg.hasMedia) options.media = await msg.downloadMedia();
 
       for (const participant of chat.participants) {
-        if (participant.id.user === sender.number) continue;
+        if (
+          participant.id.user === bot.phoneNumber ||
+          participant.id.user === sender.number
+        )
+          continue;
 
         bot.sendMessage(participant.id._serialized, `Dari ${sender.pushname}`);
         bot.sendMessage(

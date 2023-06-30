@@ -12,10 +12,12 @@ import Contact from "../models/Contact.js";
 export default class Bot {
   #commands;
   #mentions;
+  #client;
+  #phoneNumber;
 
   constructor(name) {
     this.name = name;
-    this.client = Bot.client();
+    this.#client = Bot.client();
 
     this.#commands = [
       new Command({
@@ -72,7 +74,8 @@ export default class Bot {
     if (mention) {
       if (mention.isRunnable(chat)) {
         const participants = await chat.participants;
-        const mentions = await mention.run(participants, this.client);
+        const sender = msg.getContact();
+        const mentions = await mention.run(participants, this, sender);
 
         const options = { mentions };
         if (msg.hasMedia) options.media = await msg.downloadMedia();
@@ -143,6 +146,7 @@ export default class Bot {
     });
     this.on("ready", () => {
       this.log("READY");
+      this.#phoneNumber = this.client.info.wid.user;
     });
     this.on("message_revoke_everyone", async (after, before) => {
       if (!before) return;
@@ -212,6 +216,14 @@ export default class Bot {
           }`
       )
       .join("\n");
+  }
+
+  get client() {
+    return this.#client;
+  }
+
+  get phoneNumber() {
+    return this.#phoneNumber;
   }
 
   get mentionsString() {

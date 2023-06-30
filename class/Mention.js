@@ -13,12 +13,20 @@ export default class Mention {
     this.#beta = beta;
   }
 
-  async run(participants, client) {
+  async run(participants, bot, sender) {
     const mentions = [];
 
     for (const participant of participants) {
+      if (
+        participant.id.user === bot.phoneNumber ||
+        participant.id.user === sender.number
+      )
+        continue;
+
       if (this.#handler(participant)) {
-        const number = await client.getContactById(participant.id._serialized);
+        const number = await bot.client.getContactById(
+          participant.id._serialized
+        );
         mentions.push(number);
       }
     }

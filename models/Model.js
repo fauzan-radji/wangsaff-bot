@@ -12,7 +12,6 @@ export default class Model {
    * @returns {Model}
    */
   constructor(obj) {
-    console.log(obj);
     this.#table = this.constructor._table;
     this._id = obj.id || obj._id || 0;
 
