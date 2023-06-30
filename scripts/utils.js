@@ -1,16 +1,5 @@
 import { appendFileSync, readFileSync, writeFileSync } from "fs";
-import path, { fileExists, root } from "./path.js";
-
-export function env(key, default_ = null) {
-  const content = readFileSync(root(".env"), "utf-8");
-  const lines = content.split(/\n/g);
-  for (const line of lines) {
-    const [k, v] = line.split("=");
-    if (k === key) return v;
-  }
-
-  return default_;
-}
+import path, { fileExists } from "./path.js";
 
 export function data(name, data) {
   const filePath = path.data(`${name}.json`);
@@ -46,4 +35,4 @@ export function log(...data) {
   appendFileSync(path.LOG_FILE, data.map((d) => `[${date}] ${d}\n`).join(""));
 }
 
-export default { env, data, log };
+export default { data, log };

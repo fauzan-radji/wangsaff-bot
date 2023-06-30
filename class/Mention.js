@@ -1,5 +1,3 @@
-import { env } from "../scripts/utils.js";
-
 export default class Mention {
   #name;
   #aliases;
@@ -39,7 +37,7 @@ export default class Mention {
     if (!chat.isGroup) return false;
 
     // if this is beta mention, check if it's available to the user or the chat
-    const isInBetaGroup = chat.id._serialized === env("BETA_GROUP");
+    const isInBetaGroup = chat.id._serialized === process.env.BETA_GROUP;
     if (this.beta && !isInBetaGroup) return false;
 
     return true;

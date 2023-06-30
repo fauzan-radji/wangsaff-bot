@@ -1,5 +1,3 @@
-import { env } from "../scripts/utils.js";
-
 export default class Command {
   #prompt;
   #aliases;
@@ -38,7 +36,7 @@ export default class Command {
     if (isAvaliableInPrivateChat) return false;
 
     // if this is beta command, check if it's available to the user or the chat
-    const isInBetaGroup = chat.id._serialized === env("BETA_GROUP");
+    const isInBetaGroup = chat.id._serialized === process.env.BETA_GROUP;
     if (this.beta && !isInBetaGroup) return false;
 
     return true;
