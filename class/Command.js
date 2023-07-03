@@ -1,6 +1,9 @@
+import { log } from "../scripts/utils.js";
+
 export default class Command {
   #prompt;
   #aliases;
+  #params;
   #handler;
   #inGroup;
   #inPrivateChat;
@@ -9,6 +12,7 @@ export default class Command {
   constructor({
     prompt,
     aliases = [],
+    params = [],
     handler,
     inGroup = true,
     inPrivateChat = true,
@@ -16,14 +20,36 @@ export default class Command {
   }) {
     this.#prompt = prompt;
     this.#aliases = aliases;
+    this.#params = params;
     this.#handler = handler;
     this.#inGroup = inGroup;
     this.#inPrivateChat = inPrivateChat;
     this.#beta = beta;
   }
 
-  run(...args) {
-    this.#handler(...args);
+  run(argString, data) {
+    const args = {};
+    const parts = argString.split(" ");
+    const command = parts[0];
+
+    if (parts.length - 1 < this.params.length) {
+      const errorMessage = `Invalid number of arguments for command ${command}`;
+      log(errorMessage);
+      console.log(errorMessage);
+      return;
+    }
+
+    for (let i = 0; i < this.params.length; i++) {
+      const isTheLast = i === this.params.length - 1;
+      const hasPrefix = this.params[i].startsWith("...");
+      if (!isTheLast || !hasPrefix) {
+        args[this.params[i]] = parts[i + 1];
+      } else {
+        args[this.params[i].substring(3)] = parts.slice(i + 1).join(" ");
+      }
+    }
+
+    this.#handler({ ...data, args });
   }
 
   isRunnable(chat) {
@@ -60,6 +86,10 @@ export default class Command {
 
   get beta() {
     return this.#beta;
+  }
+
+  get params() {
+    return this.#params;
   }
 
   static findByMessage(commands, message) {
