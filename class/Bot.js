@@ -63,7 +63,8 @@ export default class Bot {
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
     if (command) {
-      if (command.isRunnable(chat)) command.run({ msg, chat, contact });
+      if (command.isRunnable(chat))
+        command.run(msg.body, { msg, chat, contact });
       else {
         const errorMessage = `Command \`\`\`${command.prompt}\`\`\` isn't available here.`;
         msg.reply(errorMessage);

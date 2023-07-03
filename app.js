@@ -10,14 +10,14 @@ bot.addCommand(
     handler: ({ msg }) => {
       msg.reply("pong");
     },
-    beta: true,
   })
 );
 
 bot.addCommand(
   new Command({
     prompt: "broadcast",
-    handler: async ({ msg, chat, contact: sender }) => {
+    params: ["...message"],
+    handler: async ({ args: { message }, msg, chat, contact: sender }) => {
       const options = {};
       if (msg.hasMedia) options.media = await msg.downloadMedia();
 
@@ -29,11 +29,7 @@ bot.addCommand(
           continue;
 
         bot.sendMessage(participant.id._serialized, `Dari ${sender.pushname}`);
-        bot.sendMessage(
-          participant.id._serialized,
-          msg.body.slice("broadcast".length + 2),
-          options
-        );
+        bot.sendMessage(participant.id._serialized, message, options);
       }
     },
   })
