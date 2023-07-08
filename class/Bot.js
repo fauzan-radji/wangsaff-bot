@@ -62,6 +62,7 @@ export default class Bot {
 
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
+    /* ===========[ Run Command ]=========== */
     if (command) {
       if (command.isRunnable(chat))
         command.run(msg.body, { msg, chat, contact });
@@ -72,6 +73,7 @@ export default class Bot {
       }
     }
 
+    /* ===========[ Run Mention ]=========== */
     if (mention) {
       if (mention.isRunnable(chat)) {
         const participants = await chat.participants;
