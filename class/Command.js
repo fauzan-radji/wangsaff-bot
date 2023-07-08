@@ -20,19 +20,23 @@ export default class Command {
   }) {
     this.#prompt = prompt;
     this.#aliases = aliases;
-    this.#params = params;
     this.#handler = handler;
     this.#inGroup = inGroup;
     this.#inPrivateChat = inPrivateChat;
     this.#beta = beta;
+
+    this.#validateParams(params);
+    this.#params = params;
   }
 
   run(argString, data) {
     const args = {};
-    const parts = argString.split(" ");
-    const command = parts[0];
+    const parts = argString.split(/\s+/);
+    const command = parts.shift();
 
-    if (parts.length - 1 < this.params.length) {
+    const requiredParams = this.params.filter((param) => !param.endsWith("?"));
+
+    if (parts.length < requiredParams.length) {
       const errorMessage = `Invalid number of arguments for command ${command}`;
       log(errorMessage);
       console.log(errorMessage);
@@ -40,16 +44,47 @@ export default class Command {
     }
 
     for (let i = 0; i < this.params.length; i++) {
+      let param = this.params[i];
+
       const isTheLast = i === this.params.length - 1;
-      const hasPrefix = this.params[i].startsWith("...");
+      const hasPrefix = param.startsWith("...");
+      const isOptional = param.endsWith("?");
+
+      if (isOptional) param = param.substring(0, param.length - 1);
+
       if (!isTheLast || !hasPrefix) {
-        args[this.params[i]] = parts[i + 1];
+        args[param] = parts[i];
       } else {
-        args[this.params[i].substring(3)] = parts.slice(i + 1).join(" ");
+        args[param.substring(3)] = parts.slice(i).join(" ") || undefined;
       }
     }
 
-    this.#handler({ ...data, args });
+    return this.#handler({ ...data, args });
+  }
+
+  #validateParams(params) {
+    // check if there is optional parameter in the middle
+    const hasOptional = params.some((param) => param.endsWith("?"));
+    if (hasOptional) {
+      let optionalParamFound = false;
+      for (const param of params)
+        if (param.endsWith("?") && !optionalParamFound)
+          optionalParamFound = true;
+        else if (!param.endsWith("?") && optionalParamFound)
+          throw new Error("Optional parameter must be the last parameter");
+    }
+
+    // check if ... param is the last param
+    const hasRest = params.some((param) => param.startsWith("..."));
+    if (hasRest) {
+      let restParamFound = false;
+      for (const param of params)
+        if (param.startsWith("...") && !restParamFound) restParamFound = true;
+        else if (param.startsWith("...") && restParamFound)
+          throw new Error("Rest parameter must be the last parameter");
+    }
+
+    return true;
   }
 
   isRunnable(chat) {
