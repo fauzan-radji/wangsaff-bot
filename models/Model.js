@@ -1,8 +1,15 @@
 import { data } from "../scripts/utils.js";
 
+export const RELATION = {
+  HAS_ONE: "hasOne",
+  HAS_MANY: "hasMany",
+  BELONGS_TO: "belongsTo",
+};
+
 export default class Model {
   static _table;
-  static _fields;
+  static _fields = [];
+  static _relations = [];
   #table;
 
   /**
@@ -23,6 +30,28 @@ export default class Model {
 
     for (const [key, value] of Object.entries(filteredObj)) {
       this[key] = value;
+    }
+
+    for (const relation of this.constructor._relations) {
+      const { name, model, type } = relation;
+      const key = `${name}_id`;
+
+      switch (type) {
+        case RELATION.HAS_ONE:
+          this[name] = model.find(this[key]);
+          break;
+
+        case RELATION.HAS_MANY:
+          this[name] = model.where(`${this.table}_id`, this.id);
+          break;
+
+        case RELATION.BELONGS_TO:
+          this[name] = model.find(this[key]);
+          break;
+
+        default:
+          break;
+      }
     }
   }
 
@@ -57,6 +86,22 @@ export default class Model {
     return this._table;
   }
 
+  get filtered() {
+    const obj = {};
+    obj.id = this.id;
+    for (const key of this.constructor._fields) {
+      obj[key] = this[key];
+    }
+    return obj;
+  }
+
+  static _save(models) {
+    data(
+      this.table,
+      models.map((model) => model.filtered)
+    );
+  }
+
   /**
    * Retrieve all Models from the table
    * @returns {Model[]}
@@ -78,9 +123,8 @@ export default class Model {
 
     const model = new this(obj);
     models.push(model);
+    this._save(models);
 
-    const table = this.table;
-    data(table, models);
     return model;
   }
 
@@ -107,6 +151,19 @@ export default class Model {
   }
 
   /**
+   * Find all Models by key and value
+   * @param {string} key
+   * @param {*} value
+   * @returns {Model[]}
+   * @example
+   * Contact.where("chat_id", 1234567890);
+   * // => [Contact, Contact, Contact]
+   */
+  static where(key, value) {
+    return this.filter((model) => model[key] === value);
+  }
+
+  /**
    * Delete a Model by id
    * @param {number} id
    * @returns {Model | null}
@@ -118,9 +175,7 @@ export default class Model {
 
     const model = models[index];
     models.splice(index, 1);
-
-    const table = this.table;
-    data(table, models);
+    this._save(models);
 
     return model;
   }
@@ -138,9 +193,7 @@ export default class Model {
 
     const model = models[index];
     models[index] = new this({ ...model, ...obj });
-
-    const table = this.table;
-    data(table, models);
+    this._save(models);
 
     return model;
   }
