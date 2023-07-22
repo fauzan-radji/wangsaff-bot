@@ -1,10 +1,5 @@
+import Relation from "../class/Relation.js";
 import { data } from "../scripts/utils.js";
-
-export const RELATION = {
-  HAS_ONE: "hasOne",
-  HAS_MANY: "hasMany",
-  BELONGS_TO: "belongsTo",
-};
 
 export default class Model {
   static _table;
@@ -23,8 +18,12 @@ export default class Model {
     this._id = obj.id || obj._id || 0;
 
     const filteredObj = Object.fromEntries(
-      Object.entries(obj).filter(([key]) =>
-        this.constructor._fields.includes(key)
+      Object.entries(obj).filter(
+        ([key]) =>
+          this.constructor._fields.includes(key) ||
+          this.constructor._relations.some(
+            (relation) => relation.foreignKey === key
+          )
       )
     );
 
@@ -33,25 +32,22 @@ export default class Model {
     }
 
     for (const relation of this.constructor._relations) {
-      const { name, model, type } = relation;
-      const key = `${name}_id`;
+      Object.defineProperty(this, relation.table, {
+        get() {
+          const { model, type, foreignKey } = relation;
+          switch (type) {
+            case Relation.HAS_ONE:
+              return model.findBy(foreignKey, this.id);
 
-      switch (type) {
-        case RELATION.HAS_ONE:
-          this[name] = model.find(this[key]);
-          break;
+            case Relation.HAS_MANY:
+              return model.where(foreignKey, this.id);
 
-        case RELATION.HAS_MANY:
-          this[name] = model.where(`${this.table}_id`, this.id);
-          break;
-
-        case RELATION.BELONGS_TO:
-          this[name] = model.find(this[key]);
-          break;
-
-        default:
-          break;
-      }
+            case Relation.BELONGS_TO:
+              return model.find(this[foreignKey]);
+          }
+        },
+        enumerable: true,
+      });
     }
   }
 
@@ -145,6 +141,9 @@ export default class Model {
    * Find a Model by id
    * @param {number} id
    * @returns {Model | null}
+   * @example
+   * Contact.find(1); // => Contact
+   * Contact.find(999); // => null
    */
   static find(id) {
     return this.findBy("_id", id);
@@ -156,8 +155,7 @@ export default class Model {
    * @param {*} value
    * @returns {Model[]}
    * @example
-   * Contact.where("chat_id", 1234567890);
-   * // => [Contact, Contact, Contact]
+   * Contact.where("chat_id", 1234567890); // [Contact, Contact, Contact]
    */
   static where(key, value) {
     return this.filter((model) => model[key] === value);
