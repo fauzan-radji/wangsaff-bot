@@ -23,4 +23,5 @@ export function dirExists(path) {
 
 export const LOG_FILE = root("logs.txt");
 
-export default { root, data, fileExists, dirExists, LOG_FILE };
+export const CHROME = "/usr/bin/google-chrome-stable";
+export default { root, data, fileExists, dirExists, LOG_FILE, CHROME };
