@@ -13,6 +13,10 @@ export function data(child = "") {
   return `${root("data")}/${child.trimStart("/")}`;
 }
 
+export function media(child = "") {
+  return `${root("media")}/${child.trimStart("/")}`;
+}
+
 export function fileExists(path) {
   return existsSync(path) && lstatSync(path).isFile();
 }
