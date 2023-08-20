@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "btch-downloader": "^2.0.8",
     "dotenv": "^16.3.1",
     "json-modelizer": "^1.0.6",
     "qrcode-terminal": "^0.12.0",

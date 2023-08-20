@@ -256,6 +256,7 @@ export default class Bot {
           "--disable-gpu",
         ],
         headless: true,
+        executablePath: path.CHROME,
       },
       authStrategy: new LocalAuth({ dataPath: path.root() }),
     });

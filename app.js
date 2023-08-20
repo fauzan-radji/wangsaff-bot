@@ -1,6 +1,9 @@
 import "dotenv/config.js";
 import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
+import { instagram } from "./scripts/downloader.js";
+import pkg from "whatsapp-web.js";
+const { MessageMedia } = pkg;
 import { Contact, Group } from "./models/index.js";
 
 const bot = new Bot("bot");
@@ -80,6 +83,32 @@ bot.addCommand(
     handler: async ({ msg, args: { id } }) => {
       const group = Group.find(+id);
       msg.reply(JSON.stringify(group, null, 2));
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "instagram",
+    aliases: ["ig"],
+    params: ["url"],
+    beta: true,
+    handler: async ({ args: { url }, msg }) => {
+      const res = await instagram(url);
+      console.log(res);
+
+      if (!res.url || res.url.length < 1) {
+        msg.reply("Gagal mengambil data");
+        return;
+      }
+
+      const media = await MessageMedia.fromUrl(res.url[0]);
+      try {
+        msg.reply(media);
+      } catch (e) {
+        console.log(e);
+        msg.reply("Gagal mengirim media");
+      }
     },
   })
 );
