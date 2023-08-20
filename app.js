@@ -1,8 +1,10 @@
 import "dotenv/config.js";
 import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
+import { Contact, Group } from "./models/index.js";
 
 const bot = new Bot("bot");
+
 bot.addCommand(
   new Command({
     prompt: "ping",
@@ -31,6 +33,53 @@ bot.addCommand(
         bot.sendMessage(participant.id._serialized, `Dari ${sender.pushname}`);
         bot.sendMessage(participant.id._serialized, message, options);
       }
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "refreshdata",
+    beta: true,
+    handler: async ({ msg }) => {
+      // save all contacts to database
+      const contacts = await bot.client.getContacts();
+      Contact.clear();
+      contacts.forEach((contact) => {
+        if (!contact.isMyContact || contact.isMe || contact.isGroup) return;
+        Contact.create({
+          name: contact.pushname || contact.name,
+          number: contact.number,
+          chat_id: contact.id._serialized,
+        });
+      });
+
+      // save all groups to database
+      const chats = await bot.client.getChats();
+      Group.clear();
+      chats.forEach((chat) => {
+        if (!chat.isGroup) return;
+
+        Group.create({
+          chat_id: chat.id._serialized,
+          name: chat.name,
+          description: chat.description,
+        });
+      });
+
+      msg.reply("Data refreshed");
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "group",
+    params: ["id"],
+    beta: true,
+    handler: async ({ msg, args: { id } }) => {
+      const group = Group.find(+id);
+      msg.reply(JSON.stringify(group, null, 2));
     },
   })
 );
