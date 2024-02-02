@@ -8,6 +8,7 @@ export default class Command {
   #inGroup;
   #inPrivateChat;
   #beta;
+  #helpMessage;
 
   constructor({
     prompt,
@@ -27,6 +28,8 @@ export default class Command {
 
     this.#validateParams(params);
     this.#params = params;
+
+    this.#helpMessage = this.#generateHelpMessage();
   }
 
   run(argString, data) {
@@ -87,6 +90,17 @@ export default class Command {
     return true;
   }
 
+  #generateHelpMessage() {
+    const paramString = this.params.map((param) => `[${param}]`).join(" ");
+    const commandString = `*${this.prompt}*`;
+    const aliasString =
+      this.aliases.length > 0
+        ? `\nAlias: ${this.aliases.map((alias) => `*${alias}*`).join(", ")}`
+        : "";
+
+    return `$ ${commandString} ${paramString}${aliasString}`;
+  }
+
   isRunnable(chat) {
     // check if this command available in group chat
     const isAvailableInGroupChat = chat.isGroup && !this.inGroup;
@@ -125,6 +139,10 @@ export default class Command {
 
   get params() {
     return this.#params;
+  }
+
+  get helpMessage() {
+    return this.#helpMessage;
   }
 
   static findByMessage(commands, message) {

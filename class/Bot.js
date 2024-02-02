@@ -54,11 +54,11 @@ export default class Bot {
     const command = Command.findByMessage(this.#commands, msg.body);
     const mention = Mention.findByMessage(this.#mentions, msg.body);
 
+    if (!command && !mention) return;
+
     const chat = await msg.getChat();
     this.#addChatIfNotExists(chat);
     const contact = await msg.getContact();
-
-    if (!command && !mention) return;
 
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
 
@@ -210,15 +210,8 @@ export default class Bot {
   getAvailableCommandsString(chat) {
     return this.#commands
       .filter((command) => command.isRunnable(chat))
-      .map(
-        (command, i) =>
-          `$ *${command.prompt}* ${
-            command.aliases.length > 0
-              ? `| ${command.aliases.map((alias) => `*${alias}*`).join(", ")}`
-              : ""
-          }`
-      )
-      .join("\n");
+      .map((command) => command.helpMessage)
+      .join("\n\n");
   }
 
   get client() {
@@ -232,7 +225,7 @@ export default class Bot {
   get mentionsString() {
     return this.#mentions
       .map(
-        (mention, i) =>
+        (mention) =>
           `- *${mention.name}* ${
             mention.aliases.length > 0
               ? `| ${mention.aliases.map((alias) => `*${alias}*`).join(", ")}`

@@ -22,10 +22,7 @@ export default class Mention {
         continue;
 
       if (this.#handler(participant)) {
-        const number = await bot.client.getContactById(
-          participant.id._serialized
-        );
-        mentions.push(number);
+        mentions.push(participant.id._serialized);
       }
     }
 

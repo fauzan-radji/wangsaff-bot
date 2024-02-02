@@ -3,7 +3,7 @@ import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
 import { Contact, Group } from "./models/index.js";
 
-const bot = new Bot("bot");
+const bot = new Bot(process.env.BOT_NAME);
 
 bot.addCommand(
   new Command({
@@ -80,6 +80,31 @@ bot.addCommand(
     handler: async ({ msg, args: { id } }) => {
       const group = Group.find(+id);
       msg.reply(JSON.stringify(group, null, 2));
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "sticker",
+    aliases: ["s"],
+    params: ["stickerName?"],
+    beta: true,
+    handler: async ({ msg, args: { stickerName = "" } }) => {
+      if (!msg.hasMedia) {
+        msg.reply("Please send an image");
+        return;
+      }
+
+      const options = {
+        media: await msg.downloadMedia(),
+        sendMediaAsSticker: true,
+        stickerName: stickerName,
+        stickerAuthor: bot.name,
+        quotedMessageId: msg.id._serialized,
+      };
+
+      bot.sendMessage(msg.from, stickerName, options);
     },
   })
 );
