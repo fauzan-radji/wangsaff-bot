@@ -54,10 +54,11 @@ export default class Bot {
     const command = Command.findByMessage(this.#commands, msg.body);
     const mention = Mention.findByMessage(this.#mentions, msg.body);
 
-    if (!command && !mention) return;
-
     const chat = await msg.getChat();
     this.#addChatIfNotExists(chat);
+
+    if (!command && !mention) return;
+
     const contact = await msg.getContact();
 
     this.log(`Message from ${chat.name} (${chat.id._serialized})\n${msg.body}`);
@@ -223,16 +224,7 @@ export default class Bot {
   }
 
   get mentionsString() {
-    return this.#mentions
-      .map(
-        (mention) =>
-          `- *${mention.name}* ${
-            mention.aliases.length > 0
-              ? `| ${mention.aliases.map((alias) => `*${alias}*`).join(", ")}`
-              : ""
-          }`
-      )
-      .join("\n");
+    return this.#mentions.map((mention) => mention.helpMessage).join("\n");
   }
 
   static client() {

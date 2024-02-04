@@ -3,12 +3,15 @@ export default class Mention {
   #aliases;
   #handler;
   #beta;
+  #helpMessage;
 
   constructor({ name, aliases = [], handler, beta = false }) {
     this.#name = name;
     this.#aliases = aliases;
     this.#handler = handler;
     this.#beta = beta;
+
+    this.#helpMessage = this.#generateHelpMessage();
   }
 
   async run(participants, bot, sender) {
@@ -29,6 +32,14 @@ export default class Mention {
     return mentions;
   }
 
+  #generateHelpMessage() {
+    return `- *${this.name}* ${
+      this.aliases.length > 0
+        ? `| ${this.aliases.map((alias) => `*${alias}*`).join(", ")}`
+        : ""
+    }`;
+  }
+
   isRunnable(chat) {
     // this feat only available inside group
     if (!chat.isGroup) return false;
@@ -46,6 +57,10 @@ export default class Mention {
 
   get aliases() {
     return this.#aliases.map((alias) => `@${alias}`);
+  }
+
+  get helpMessage() {
+    return this.#helpMessage;
   }
 
   get beta() {
