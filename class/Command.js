@@ -2,6 +2,7 @@ import { log } from "../scripts/utils.js";
 
 export default class Command {
   #prompt;
+  #description;
   #aliases;
   #params;
   #handler;
@@ -12,6 +13,7 @@ export default class Command {
 
   constructor({
     prompt,
+    description,
     aliases = [],
     params = [],
     handler,
@@ -20,6 +22,7 @@ export default class Command {
     beta = false,
   }) {
     this.#prompt = prompt;
+    this.#description = description;
     this.#aliases = aliases;
     this.#handler = handler;
     this.#inGroup = inGroup;
@@ -95,10 +98,12 @@ export default class Command {
     const commandString = `*${this.prompt}*`;
     const aliasString =
       this.aliases.length > 0
-        ? `\nAlias: ${this.aliases.map((alias) => `*${alias}*`).join(", ")}`
+        ? `Alias: ${this.aliases.map((alias) => `*${alias}*`).join(", ")}`
         : "";
 
-    return `$ ${commandString} ${paramString}${aliasString}`;
+    return `$ ${commandString} ${paramString}
+    ${aliasString}
+    ${this.#description}`.replace(/^ +/gm, "");
   }
 
   isRunnable(chat) {
@@ -145,6 +150,13 @@ export default class Command {
     return this.#helpMessage;
   }
 
+  /**
+   * Find command by message
+   * @param {Command[]} commands
+   * @param {string} message
+   * @returns {Command}
+   */
+
   static findByMessage(commands, message) {
     // find command by prompt or aliases
     return commands.find(
@@ -153,6 +165,20 @@ export default class Command {
         command.#aliases.some((alias) =>
           message.startsWith(`${Command.PREFIX}${alias}`)
         )
+    );
+  }
+
+  /**
+   * Find command by name
+   * @param {Command[]} commands
+   * @param {string} name
+   * @returns {Command}
+   */
+  static findByName(commands, name) {
+    return commands.find(
+      (command) =>
+        command.#prompt === name ||
+        command.#aliases.some((alias) => alias === name)
     );
   }
 

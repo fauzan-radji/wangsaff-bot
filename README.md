@@ -13,3 +13,29 @@ Whatsapp bot
 1. Run `npm start`
 2. Scan the barcode if you are not authenticated
 3. Start trigger the bot by sending it a `.ping` message or send `.help` to get list of `commands` and `mention` available.
+
+## Available Commands
+
+### Default Commands
+
+| Command | Description                                | Arguments | Aliases            |
+| ------- | ------------------------------------------ | --------- | ------------------ |
+| `.ping` | Check if the bot is alive                  | -         | `.p`               |
+| `.menu` | Get list of commands and mention available | `name?`   | `.help` `.bantuan` |
+
+### Custom Commands
+
+| Command      | Description                            | Arguments      | Aliases |
+| ------------ | -------------------------------------- | -------------- | ------- |
+| `.broadcast` | Send message to all members in a group | `...message`   | -       |
+| `.sticker`   | Create sticker from image              | `stickerName?` | `.s`    |
+
+## Available Mention
+
+### Default Mention
+
+| Mention     | Description                    | Aliases                                    |
+| ----------- | ------------------------------ | ------------------------------------------ |
+| `@everyone` | Mention all members in a group | `@everybody` `@all` `@semua` `@semuaorang` |
+| `@admin`    | Mention all admins in a group  | `@atmint` `@min` `@mint`                   |
+| `@member`   | Mention all members in a group | `@anggota`                                 |

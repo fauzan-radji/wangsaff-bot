@@ -21,10 +21,24 @@ export default class Bot {
 
     this.#commands = [
       new Command({
+        prompt: "ping",
+        description: "Check if bot is alive",
+        aliases: ["p"],
+        handler: ({ msg }) => {
+          msg.reply("pong");
+        },
+      }),
+      new Command({
         prompt: "menu",
+        description: "Show available commands",
         aliases: ["help", "bantuan"],
-        handler: ({ msg, chat }) => {
-          msg.reply(`*Menu*\n${this.getMenu(chat)}`);
+        params: ["name?"],
+        handler: ({ msg, chat, args: { name } }) => {
+          if (name) {
+            const command = Command.findByName(this.#commands, name);
+            if (command) msg.reply(command.helpMessage);
+            else msg.reply(`Command \`\`\`${name}\`\`\` not found.`);
+          } else msg.reply(this.getHelpString(chat));
         },
       }),
     ];
@@ -36,10 +50,12 @@ export default class Bot {
       }),
       new Mention({
         name: "admin",
+        aliases: ["atmint", "min", "mint"],
         handler: (participant) => participant.isAdmin,
       }),
       new Mention({
         name: "member",
+        aliases: ["anggota"],
         handler: (participant) =>
           !(participant.isAdmin || participant.isSuperAdmin),
       }),
@@ -202,6 +218,14 @@ export default class Bot {
     console.error(`${this.name}: Error:`, e);
   }
 
+  getHelpString(chat) {
+    const listOfMenus = this.getMenu(chat);
+
+    return `Type \`\`\`.help\`\`\` or \`\`\`.menu\`\`\` to see this list.
+      Type \`\`\`.help name\`\`\` or \`\`\`.menu name\`\`\` to find out more about the function \`\`\`name\`\`\`.
+      ${listOfMenus}`.replace(/^ +/gm, "");
+  }
+
   getMenu(chat) {
     return `\n${this.getAvailableCommandsString(chat)}\n\n${
       this.mentionsString
@@ -209,10 +233,17 @@ export default class Bot {
   }
 
   getAvailableCommandsString(chat) {
-    return this.#commands
-      .filter((command) => command.isRunnable(chat))
-      .map((command) => command.helpMessage)
-      .join("\n\n");
+    return (
+      this.#commands
+        // .filter((command) => command.isRunnable(chat))
+        .map(
+          (command) =>
+            `$ ${command.prompt} ${command.params
+              .map((param) => `[${param}]`)
+              .join(" ")}`
+        )
+        .join("\n")
+    );
   }
 
   get client() {
