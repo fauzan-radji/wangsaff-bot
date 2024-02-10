@@ -261,6 +261,7 @@ export default class Bot {
   static client() {
     return new Client({
       puppeteer: {
+        executablePath: path.CHROME,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
@@ -271,7 +272,6 @@ export default class Bot {
           "--single-process",
           "--disable-gpu",
         ],
-        headless: true,
       },
       authStrategy: new LocalAuth({ dataPath: path.root() }),
     });

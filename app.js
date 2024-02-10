@@ -2,6 +2,7 @@ import "dotenv/config.js";
 import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
 import { Contact, Group } from "./models/index.js";
+import { instagram } from "./scripts/downloader.js";
 
 const bot = new Bot(process.env.BOT_NAME);
 
@@ -98,6 +99,29 @@ bot.addCommand(
       };
 
       bot.sendMessage(msg.from, stickerName, options);
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "instagram",
+    description: "Download media from Instagram",
+    aliases: ["ig"],
+    params: ["url"],
+    handler: async ({ args: { url }, msg }) => {
+      msg.reply("Downloading media from Instagram...");
+      const medias = await instagram(url);
+      try {
+        for (const { media, mime } of medias) {
+          msg.reply(media, null, {
+            sendMediaAsDocument: !mime.startsWith("image"),
+          });
+        }
+      } catch (e) {
+        bot.error(e);
+        msg.reply("Failed to download media from Instagram");
+      }
     },
   })
 );
