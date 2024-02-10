@@ -2,9 +2,7 @@ import "dotenv/config.js";
 import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
 import { Contact, Group } from "./models/index.js";
-import pkg from "whatsapp-web.js";
 import { instagram } from "./scripts/downloader.js";
-const { MessageMedia } = pkg;
 
 const bot = new Bot(process.env.BOT_NAME);
 

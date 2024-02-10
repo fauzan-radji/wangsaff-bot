@@ -35,15 +35,6 @@ export function log(...data) {
   appendFileSync(path.LOG_FILE, data.map((d) => `[${date}] ${d}\n`).join(""));
 }
 
-// export async function instagram(url) {
-//   const response = await instagramDl(url);
-//   const downloadLink = response[0].download_link;
-
-//   const res = await fetchData(downloadLink);
-
-//   return new MessageMedia(res.mime, res.data);
-// }
-
 async function fetchData(url, options = {}) {
   const reqOptions = Object.assign(
     { headers: { accept: "image/* video/* text/* audio/*" } },
