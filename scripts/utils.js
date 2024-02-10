@@ -35,4 +35,39 @@ export function log(...data) {
   appendFileSync(path.LOG_FILE, data.map((d) => `[${date}] ${d}\n`).join(""));
 }
 
+// export async function instagram(url) {
+//   const response = await instagramDl(url);
+//   const downloadLink = response[0].download_link;
+
+//   const res = await fetchData(downloadLink);
+
+//   return new MessageMedia(res.mime, res.data);
+// }
+
+async function fetchData(url, options = {}) {
+  const reqOptions = Object.assign(
+    { headers: { accept: "image/* video/* text/* audio/*" } },
+    options
+  );
+  const response = await fetch(url, reqOptions);
+  const mime = response.headers.get("Content-Type");
+  const size = response.headers.get("Content-Length");
+  const contentDisposition = response.headers.get("Content-Disposition");
+  const name = contentDisposition
+    ? contentDisposition.match(/((?<=filename=")(.*)(?="))/)
+    : null;
+  let data = "";
+  if (response.buffer) {
+    data = (await response.buffer()).toString("base64");
+  } else {
+    const bArray = new Uint8Array(await response.arrayBuffer());
+    bArray.forEach((b) => {
+      data += String.fromCharCode(b);
+    });
+    data = btoa(data);
+  }
+
+  return { data, mime, name, size };
+}
+
 export default { data, log };
