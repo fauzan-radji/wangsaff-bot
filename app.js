@@ -3,6 +3,7 @@ import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
 import { Contact, Group } from "./models/index.js";
 import { instagram } from "./scripts/downloader.js";
+import { openai } from "./scripts/ai.js";
 
 const bot = new Bot(process.env.BOT_NAME);
 
@@ -25,6 +26,9 @@ bot.addCommand(
         bot.sendMessage(participant.id._serialized, `Dari ${sender.pushname}`);
         bot.sendMessage(participant.id._serialized, message, options);
       }
+    },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
     },
   })
 );
@@ -62,6 +66,9 @@ bot.addCommand(
 
       msg.reply("Data refreshed");
     },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
+    },
   })
 );
 
@@ -74,6 +81,9 @@ bot.addCommand(
     handler: async ({ msg, args: { id } }) => {
       const group = Group.find(+id);
       msg.reply(JSON.stringify(group, null, 2));
+    },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
     },
   })
 );
@@ -100,6 +110,9 @@ bot.addCommand(
 
       bot.sendMessage(msg.from, stickerName, options);
     },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
+    },
   })
 );
 
@@ -122,6 +135,27 @@ bot.addCommand(
         bot.error(e);
         msg.reply("Failed to download media from Instagram");
       }
+    },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "bot",
+    description: "Chat with AI",
+    aliases: ["ai"],
+    params: ["...prompt"],
+    handler: async ({ args: { prompt = "Halo" }, msg, chat }) => {
+      bot.typing(chat);
+      const response = await openai(prompt);
+      bot.clearState(chat);
+      msg.reply(response);
+    },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
     },
   })
 );

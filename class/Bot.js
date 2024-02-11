@@ -15,6 +15,8 @@ export default class Bot {
   #client;
   #phoneNumber;
 
+  #state;
+
   constructor(name) {
     this.name = name;
     this.#client = Bot.client();
@@ -246,6 +248,24 @@ export default class Bot {
     );
   }
 
+  typing(chat) {
+    chat.sendStateTyping();
+    this.#state = Bot.#STATE.TYPING;
+    const interval = setInterval(() => {
+      if (this.#state == Bot.#STATE.TYPING) {
+        chat.sendStateTyping();
+      } else {
+        clearInterval(interval);
+        this.#state = Bot.#STATE.IDLE;
+      }
+    }, 25000);
+  }
+
+  clearState(chat) {
+    chat.clearState();
+    this.#state = Bot.#STATE.IDLE;
+  }
+
   get client() {
     return this.#client;
   }
@@ -276,4 +296,10 @@ export default class Bot {
       authStrategy: new LocalAuth({ dataPath: path.root() }),
     });
   }
+
+  static #STATE = {
+    TYPING: "typing",
+    RECORDING: "recording",
+    IDLE: "idle",
+  };
 }
