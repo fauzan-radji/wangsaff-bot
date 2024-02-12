@@ -30,6 +30,7 @@ Whatsapp bot
 | `.broadcast` | Send message to all members in a group | `...message`   | -       |
 | `.sticker`   | Create sticker from image              | `stickerName?` | `.s`    |
 | `.instagram` | Download media from Instagram          | `url`          | `.ig`   |
+| `.bot`       | Chat with AI                           | `...prompt`    | `.ai`   |
 
 ## Available Mention
 

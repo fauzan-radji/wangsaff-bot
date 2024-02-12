@@ -10,6 +10,7 @@ export default class Command {
   #inPrivateChat;
   #beta;
   #helpMessage;
+  #onError;
 
   constructor({
     prompt,
@@ -17,6 +18,7 @@ export default class Command {
     aliases = [],
     params = [],
     handler,
+    onError = () => {},
     inGroup = true,
     inPrivateChat = true,
     beta = false,
@@ -25,6 +27,7 @@ export default class Command {
     this.#description = description;
     this.#aliases = aliases;
     this.#handler = handler;
+    this.#onError = onError;
     this.#inGroup = inGroup;
     this.#inPrivateChat = inPrivateChat;
     this.#beta = beta;
@@ -46,7 +49,7 @@ export default class Command {
       const errorMessage = `Invalid number of arguments for command ${command}`;
       log(errorMessage);
       console.log(errorMessage);
-      return;
+      return this.#onError({ ...data, error: errorMessage });
     }
 
     for (let i = 0; i < this.params.length; i++) {
