@@ -31,6 +31,7 @@ Whatsapp bot
 | `.sticker`   | Create sticker from image              | `stickerName?` | `.s`    |
 | `.instagram` | Download media from Instagram          | `url`          | `.ig`   |
 | `.bot`       | Chat with AI                           | `...prompt`    | `.ai`   |
+| `.dalle`     | Generate image from prompt             | `...prompt`    | -       |
 
 ## Available Mention
 
