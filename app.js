@@ -3,7 +3,7 @@ import Bot from "./class/Bot.js";
 import Command from "./class/Command.js";
 import { Contact, Group } from "./models/index.js";
 import { instagram } from "./scripts/downloader.js";
-import { openai } from "./scripts/ai.js";
+import { openai, dalle } from "./scripts/ai.js";
 
 const bot = new Bot(process.env.BOT_NAME);
 
@@ -153,6 +153,21 @@ bot.addCommand(
       const response = await openai(prompt);
       bot.clearState(chat);
       msg.reply(response);
+    },
+    onError: ({ error, msg }) => {
+      msg.reply(error);
+    },
+  })
+);
+
+bot.addCommand(
+  new Command({
+    prompt: "dalle",
+    description: "Generate image from prompt",
+    params: ["...prompt"],
+    handler: async ({ args: { prompt }, msg, chat }) => {
+      const media = await dalle(prompt);
+      msg.reply(media);
     },
     onError: ({ error, msg }) => {
       msg.reply(error);
